@@ -1,13 +1,11 @@
 package controllers
 
-import akka.actor.ActorRef
-import akka.pattern.ask
+import controllers.utils.{Meta, Response}
 import javax.inject._
+import play.api.libs.json.Json
 import play.api.mvc._
+import services.LibraryService
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationInt
-import scala.language.postfixOps
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -16,8 +14,7 @@ import scala.language.postfixOps
 case class Message(value: String)
 
 @Singleton
-class HomeController @Inject()(components: ControllerComponents, @Named("library-actor") library: ActorRef)(implicit ec: ExecutionContext) extends AbstractController(components) {
-  implicit val timeout: akka.util.Timeout = 1 minute
+class HomeController @Inject()(components: ControllerComponents, ls: LibraryService) extends AbstractController(components) {
 
   /**
    * Create an Action to render an HTML page.
@@ -26,10 +23,8 @@ class HomeController @Inject()(components: ControllerComponents, @Named("library
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index = Action.async {
-    // TODO: JSONで返せるようにする
-    (library ? Message("ababa")).mapTo[String].map { message =>
-      Ok(message)
-    }
+  def index: Action[AnyContent] = Action { implicit request =>
+    ls.add("message")
+    Ok(Json.toJson(Response(Meta(200))))
   }
 }
