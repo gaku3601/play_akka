@@ -11,7 +11,6 @@ import services.LibraryService
  * This controller creates an `Action` to handle HTTP requests to the
  * application's home page.
  */
-case class Message(value: String)
 
 @Singleton
 class HomeController @Inject()(components: ControllerComponents, ls: LibraryService) extends AbstractController(components) {
@@ -24,7 +23,8 @@ class HomeController @Inject()(components: ControllerComponents, ls: LibraryServ
    * a path of `/`.
    */
   def index: Action[AnyContent] = Action { implicit request =>
-    ls.add("message")
+    println(ls.show("read"))
+    ls.post("write")
     Ok(Json.toJson(Response(Meta(200))))
   }
 }
