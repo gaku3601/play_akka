@@ -28,6 +28,7 @@ class LibraryService @Inject()(@Named("library-actor") library: ActorRef)(implic
   def post(message: String): Unit = {
     val source = Source.single(Write(Message(message)))
     val sink = Sink.actorRef[Write](library, onCompleteMessage = "stream completed", onFailureMessage = (throwable: Throwable) => Fail(throwable.getMessage))
+    // TODO:同期にする
     source.to(sink).run()
   }
 }
