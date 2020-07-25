@@ -9,6 +9,7 @@ case class Message(value: String)
 
 class Library extends Actor {
   override def receive: Receive = {
+    // TODO: エラーハンドリングを記述し、仮に例外を発生した場合、onComplete等で補足できないか検証する
     case Read(message) => {
       sender ! s"I receive '${message.value}'!"
     }
