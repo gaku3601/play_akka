@@ -1,8 +1,6 @@
 package controllers
 
-import controllers.utils.{Meta, Response}
 import javax.inject._
-import play.api.libs.json.Json
 import play.api.mvc._
 import services.LibraryService
 
@@ -24,16 +22,29 @@ class HomeController @Inject()(components: ControllerComponents, ls: LibraryServ
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index: Action[AnyContent] = Action.async { implicit request =>
+  /*
+def index: Action[AnyContent] = Action.async { implicit request =>
+
+  /*
+  ls.show("error1") map { x =>
+    Ok(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
+  }
+   */
+  ls.post("error1") map {
+    case Right(_) => Ok(Json.toJson(Response(Meta(200), Some(Json.toJson("ok")))))
+    case Left(b) => BadRequest(Json.toJson(b))
+  }
+}
+
+   */
+  def index: Action[AnyContent] = Action { implicit request =>
 
     /*
     ls.show("error1") map { x =>
       Ok(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
     }
      */
-    ls.post("error") map {
-      case Right(_) => Ok(Json.toJson(Response(Meta(200), Some(Json.toJson("ok")))))
-      case Left(b) => BadRequest(Json.toJson(b))
-    }
+    ls.post("error1")
+    Ok("ok")
   }
 }
