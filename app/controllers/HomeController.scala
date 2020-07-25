@@ -6,6 +6,8 @@ import play.api.libs.json.Json
 import play.api.mvc._
 import services.LibraryService
 
+import scala.concurrent.ExecutionContext
+
 
 /**
  * This controller creates an `Action` to handle HTTP requests to the
@@ -13,7 +15,7 @@ import services.LibraryService
  */
 
 @Singleton
-class HomeController @Inject()(components: ControllerComponents, ls: LibraryService) extends AbstractController(components) {
+class HomeController @Inject()(components: ControllerComponents, ls: LibraryService)(implicit ec: ExecutionContext) extends AbstractController(components) {
 
   /**
    * Create an Action to render an HTML page.
@@ -22,9 +24,16 @@ class HomeController @Inject()(components: ControllerComponents, ls: LibraryServ
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index: Action[AnyContent] = Action { implicit request =>
-    println(ls.show("read"))
-    ls.post("write")
-    Ok(Json.toJson(Response(Meta(200))))
+  def index: Action[AnyContent] = Action.async { implicit request =>
+
+    /*
+    ls.show("error1") map { x =>
+      Ok(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
+    }
+     */
+    ls.post("error") map {
+      case Right(_) => Ok(Json.toJson(Response(Meta(200), Some(Json.toJson("ok")))))
+      case Left(b) => BadRequest(Json.toJson(b))
+    }
   }
 }
