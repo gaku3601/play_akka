@@ -4,8 +4,8 @@ import actors.Download.GetURL
 import actors.Library.{Read, Write}
 import actors.Message
 import akka.actor.ActorRef
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{Broadcast, Flow, GraphDSL, Merge, RunnableGraph, Sink, Source}
+import akka.stream.{ClosedShape, Materializer}
 import javax.inject.{Inject, Named}
 
 import scala.concurrent.duration.DurationInt
@@ -34,5 +34,28 @@ class LibraryService @Inject()(@Named("library-actor") library: ActorRef, @Named
     val flow2 = Flow[Write].ask[Either[String, String]](library)
     val test = source.via(flow1).via(flow2).runWith(sink)
     println(Await.result(test, timeout.duration))
+  }
+
+  def graph(message: String): Unit = {
+    val out = Sink.head[Either[String, String]]
+    val g = RunnableGraph.fromGraph(GraphDSL.create(out) { implicit builder =>
+      out =>
+        import GraphDSL.Implicits._
+        val in = Source.single(GetURL("downloadUrl"))
+        val flow1 = Flow[GetURL].ask[Either[String, String]](download)
+        val bcast = builder.add(Broadcast[Either[String, String]](outputPorts = 2))
+        val leftOut = Flow[Either[String, String]].filter(_.isLeft)
+        val rightOut = Flow[Either[String, String]].filter(_.isRight)
+        val merge = builder.add(Merge[Either[String, String]](2))
+        val converter = Flow[Either[String, String]].map(x => {
+          Write(Message(x.getOrElse("error")))
+        })
+        val flow2 = Flow[Write].ask[Either[String, String]](library)
+
+        in ~> flow1 ~> bcast ~> leftOut ~> merge ~> out
+        bcast ~> rightOut ~> converter ~> flow2 ~> merge
+        ClosedShape
+    }).run()
+    println(Await.result(g, timeout.duration))
   }
 }

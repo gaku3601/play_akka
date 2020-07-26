@@ -9,7 +9,7 @@ import play.api.libs.concurrent.AkkaGuiceSupport
 class Download extends Actor {
   override def receive: Receive = {
     case GetURL(url: String) => {
-      sender() ! Left("ok")
+      sender() ! Right("donwload ok")
     }
   }
 }

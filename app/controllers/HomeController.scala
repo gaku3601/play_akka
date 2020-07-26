@@ -44,7 +44,7 @@ def index: Action[AnyContent] = Action.async { implicit request =>
       Ok(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
     }
      */
-    ls.post("error1")
+    ls.graph("error1")
     Ok("ok")
   }
 }

@@ -17,9 +17,9 @@ class Library extends Actor {
       }
     case Write(message) =>
       if (message.value == "error") {
-        sender ! Left("error")
+        sender ! Left("library error")
       } else {
-        sender ! Right("ok")
+        sender ! Right(s"${message.value} library ok")
       }
   }
 }
