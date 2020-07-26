@@ -59,6 +59,7 @@ class LibraryService @Inject()(@Named("library-actor") library: ActorRef, @Named
     println(Await.result(g, timeout.duration))
   }
 
+  // 最終完成形: これを元にakka streamは使っていく
   def graph2(message: String) = {
     val sink = Sink.head[Either[String, String]]
     RunnableGraph.fromGraph(GraphDSL.create(sink) { implicit builder =>
