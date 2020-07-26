@@ -1,6 +1,8 @@
 package controllers
 
+import controllers.utils.{Meta, Response}
 import javax.inject._
+import play.api.libs.json.Json
 import play.api.mvc._
 import services.LibraryService
 
@@ -37,14 +39,11 @@ def index: Action[AnyContent] = Action.async { implicit request =>
 }
 
    */
-  def index: Action[AnyContent] = Action { implicit request =>
+  def index: Action[AnyContent] = Action.async { implicit request =>
 
-    /*
-    ls.show("error1") map { x =>
-      Ok(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
+    ls.graph2("error1") map {
+      case Right(x) => Ok(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
+      case Left(x) => BadRequest(Json.toJson(Response(Meta(200), Some(Json.toJson(x)))))
     }
-     */
-    ls.graph("error1")
-    Ok("ok")
   }
 }

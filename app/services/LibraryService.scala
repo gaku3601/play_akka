@@ -58,4 +58,24 @@ class LibraryService @Inject()(@Named("library-actor") library: ActorRef, @Named
     }).run()
     println(Await.result(g, timeout.duration))
   }
+
+  def graph2(message: String) = {
+    val sink = Sink.head[Either[String, String]]
+    RunnableGraph.fromGraph(GraphDSL.create(sink) { implicit builder =>
+      out =>
+        import GraphDSL.Implicits._
+        val broadcast = builder.add(Broadcast[Either[String, String]](2))
+        val merge = builder.add(Merge[Either[String, String]](2))
+        val in = Source.single(GetURL(message))
+        val flow1 = Flow[GetURL].ask[Either[String, String]](download)
+        val converter = Flow[Either[String, String]].map(x => Write(Message(x.getOrElse("error"))))
+        val flow2 = Flow[Write].ask[Either[String, String]](library)
+
+        in ~> flow1 ~> broadcast.in
+        broadcast.out(0).filter(_.isLeft) ~> merge.in(0)
+        broadcast.out(1).filter(_.isRight) ~> converter ~> flow2 ~> merge.in(1)
+        merge.out ~> out
+        ClosedShape
+    }).run()
+  }
 }
